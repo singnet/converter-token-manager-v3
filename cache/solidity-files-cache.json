@@ -608,8 +608,8 @@
       ]
     },
     "/Users/kirill/Work/converter-token-manager-v3/contracts/TokenConversionManagerV3.sol": {
-      "lastModificationDate": 1718030429178,
-      "contentHash": "431ffe17da3d5273bcaa2d332b28213d",
+      "lastModificationDate": 1718054499559,
+      "contentHash": "82124d06e79df6ab2fa25082e89ec8c0",
       "sourceName": "contracts/TokenConversionManagerV3.sol",
       "solcConfig": {
         "version": "0.8.26",

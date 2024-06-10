@@ -24,18 +24,6 @@ contract TokenConversionManagerV3 is Ownable2Step, ReentrancyGuard {
 
     address private _conversionAuthorizer; // Authorizer Address for the conversion
 
-    /**
-     * @dev Selector for the `transfer(address,uint256)` function
-     * calculated as bytes4(keccak256("transfer(address,uint256)"))
-     */
-    bytes4 internal constant TRANSFER_SELECTOR = 0xa9059cbb;
-
-    /**
-     * @dev Selector for the `transferFrom(address,address,uint256)` function
-     * calculated as bytes4(keccak256("transferFrom(address,address,uint256)"))
-     */
-    bytes4 private constant TRANSFERFROM_SELECTOR = 0x23b872dd;
-
     // already used conversion signature from authorizer in order to prevent replay attack
     mapping (bytes32 => bool) private _usedSignatures; 
 
@@ -136,7 +124,6 @@ contract TokenConversionManagerV3 is Ownable2Step, ReentrancyGuard {
         nonReentrant 
     {
         // Check for non zero value for the amount is not needed as the Signature will not be generated for zero amount
-        
         // Compose the message which was signed
         bytes32 message = prefixed(
             keccak256(
@@ -159,14 +146,7 @@ contract TokenConversionManagerV3 is Ownable2Step, ReentrancyGuard {
             revert UsedSignature();
         _usedSignatures[message] = true;
 
-        (bool success, ) = TOKEN.call(
-            abi.encodeWithSelector(
-                TRANSFERFROM_SELECTOR, 
-                _msgSender(),
-                address(this),
-                amount
-            )
-        );
+        bool success = IERC20(TOKEN).transferFrom(_msgSender(), address(this), amount);
                     
         // In case if the burn call fails
         if (!success)
@@ -201,7 +181,6 @@ contract TokenConversionManagerV3 is Ownable2Step, ReentrancyGuard {
         notZeroAddress(to)
     {
         // Check for non zero value for the amount is not needed as the Signature will not be generated for zero amount
-
         // Compose the message which was signed
         bytes32 message = prefixed(
             keccak256(
@@ -228,7 +207,7 @@ contract TokenConversionManagerV3 is Ownable2Step, ReentrancyGuard {
         if (getConverterBalance() < amount)
             revert InsufficientConverterBalance();
 
-        (bool success, ) = TOKEN.call(abi.encodeWithSelector(TRANSFER_SELECTOR, to, amount));
+        bool success = IERC20(TOKEN).transfer(to, amount);
 
         if (!success)
             revert ConversionFailed();
@@ -244,14 +223,7 @@ contract TokenConversionManagerV3 is Ownable2Step, ReentrancyGuard {
         
         _converterInternalLiquidity += amount;
 
-        (bool success, ) = TOKEN.call(
-            abi.encodeWithSelector(
-                TRANSFERFROM_SELECTOR, 
-                _msgSender(),
-                address(this),
-                amount
-            )
-        );
+        bool success = IERC20(TOKEN).transferFrom(_msgSender(), address(this), amount);
 
         if (!success)
             revert IncreaseLiquidityFailed();
@@ -265,18 +237,14 @@ contract TokenConversionManagerV3 is Ownable2Step, ReentrancyGuard {
     */
     function decreaseConverterLiquidity(uint256 amount) external onlyOwner {
 
-        if (_converterInternalLiquidity == 0)
-            revert InsufficientLiquidityBalance();
-
-        if (amount > _converterInternalLiquidity)
-            revert WithdrawExceedsDeposit();
-            
-        if (getConverterBalance() < amount)
-            revert InsufficientConverterBalance();
+        if (_converterInternalLiquidity == 0) revert InsufficientLiquidityBalance();
+        if (amount > _converterInternalLiquidity) revert WithdrawExceedsDeposit();
+        if (getConverterBalance() < amount) revert InsufficientConverterBalance();
 
         _converterInternalLiquidity -= amount;
 
-        (bool success, ) = TOKEN.call(abi.encodeWithSelector(TRANSFER_SELECTOR, _msgSender(), amount));
+        // (bool success, ) = TOKEN.call(abi.encodeWithSelector(TRANSFER_SELECTOR, _msgSender(), amount));
+        bool success = IERC20(TOKEN).transfer(_msgSender(), amount);
 
         if (!success)
             revert DecreaseLiquidityFailed();

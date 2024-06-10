@@ -9,3 +9,6 @@ typechain-types
 .secret
 .env
 arguments.js
+
+# System
+.DS_Store
