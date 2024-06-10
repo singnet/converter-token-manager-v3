@@ -64,7 +64,7 @@ contract TokenConversionManagerV3 is Ownable2Step, ReentrancyGuard {
             revert ViolationOfTxAmountLimits();
         _;
     }
-
+    
     modifier notZeroAddress(address account) {
         if (account == address(0))
             revert ZeroAddress();
@@ -115,7 +115,7 @@ contract TokenConversionManagerV3 is Ownable2Step, ReentrancyGuard {
 
     /**
     * @dev To convert the tokens from Ethereum to non Ethereum network. 
-    * The tokens which needs to be convereted will be burned on the host network.
+    * The tokens which needs to be convereted will be locked on the host network.
     * The conversion authorizer needs to provide the signature to call this function.
     * @param amount - conversion amount
     * @param conversionId - hashed conversion id
@@ -177,9 +177,9 @@ contract TokenConversionManagerV3 is Ownable2Step, ReentrancyGuard {
 
     /**
     * @dev To convert the tokens from non Ethereum to Ethereum network. 
-    * The tokens which needs to be convereted will be minted on the host network.
+    * The tokens which needs to be convereted will be transfer on the host network.
     * The conversion authorizer needs to provide the signature to call this function.
-    * @param to - distination conversion operation address for mint converted tokens
+    * @param to - distination conversion operation address for transfer tokens at conversion
     * @param amount - conversion amount
     * @param conversionId - hashed conversion id
     * @param v - split authorizer signature
@@ -236,7 +236,12 @@ contract TokenConversionManagerV3 is Ownable2Step, ReentrancyGuard {
         emit ConversionIn(to, conversionId, amount);
     }
 
-    function increaseConverterLiquidity(uint amount) external onlyOwner {
+    /**
+    * @dev Function for adding tokens to the converter manager for its possible use
+    * @param amount - amount for add converter liquidity
+    */
+    function increaseConverterLiquidity(uint256 amount) external onlyOwner {
+        
         _converterInternalLiquidity += amount;
 
         (bool success, ) = TOKEN.call(
@@ -254,11 +259,20 @@ contract TokenConversionManagerV3 is Ownable2Step, ReentrancyGuard {
         emit IncreaseLiquidity(amount, _converterInternalLiquidity);
     }
 
-    function decreaseConverterLiquidity(uint amount) external onlyOwner {
+    /**
+    * @dev Function for adding tokens to the converter manager for its possible use
+    * @param amount - amount for remove available converter liquidity
+    */
+    function decreaseConverterLiquidity(uint256 amount) external onlyOwner {
+
         if (_converterInternalLiquidity == 0)
             revert InsufficientLiquidityBalance();
+
         if (amount > _converterInternalLiquidity)
             revert WithdrawExceedsDeposit();
+            
+        if (getConverterBalance() < amount)
+            revert InsufficientConverterBalance();
 
         _converterInternalLiquidity -= amount;
 
