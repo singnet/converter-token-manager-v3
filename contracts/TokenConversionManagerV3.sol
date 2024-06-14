@@ -9,12 +9,9 @@ import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 error ViolationOfTxAmountLimits();
 error InvalidRequestOrSignature();
 error UsedSignature();
-error ConversionFailed();
 error InvalidUpdateConfigurations();
 error InsufficientConverterBalance();
 error InsufficientLiquidityBalance();
-error IncreaseLiquidityFailed();
-error DecreaseLiquidityFailed();
 error WithdrawExceedsDeposit();
 error ZeroAddress();
 
@@ -43,7 +40,6 @@ contract TokenConversionManagerV3 is Ownable2Step, ReentrancyGuard {
 
     event IncreaseLiquidity(uint256 added, uint256 totalLiquidity);
     event DecreaseLiquidity(uint256 removed, uint256 totalLiquidity);
-
 
     // Modifiers
     modifier checkLimits(uint256 amount) {
@@ -146,11 +142,7 @@ contract TokenConversionManagerV3 is Ownable2Step, ReentrancyGuard {
             revert UsedSignature();
         _usedSignatures[message] = true;
 
-        bool success = IERC20(TOKEN).transferFrom(_msgSender(), address(this), amount);
-                    
-        // In case if the burn call fails
-        if (!success)
-            revert ConversionFailed();
+        IERC20(TOKEN).transferFrom(_msgSender(), address(this), amount);
 
         emit ConversionOut(_msgSender(), conversionId, amount);
     }
@@ -207,10 +199,7 @@ contract TokenConversionManagerV3 is Ownable2Step, ReentrancyGuard {
         if (getConverterBalance() < amount)
             revert InsufficientConverterBalance();
 
-        bool success = IERC20(TOKEN).transfer(to, amount);
-
-        if (!success)
-            revert ConversionFailed();
+        IERC20(TOKEN).transfer(to, amount);
 
         emit ConversionIn(to, conversionId, amount);
     }
@@ -223,10 +212,7 @@ contract TokenConversionManagerV3 is Ownable2Step, ReentrancyGuard {
         
         _converterInternalLiquidity += amount;
 
-        bool success = IERC20(TOKEN).transferFrom(_msgSender(), address(this), amount);
-
-        if (!success)
-            revert IncreaseLiquidityFailed();
+        IERC20(TOKEN).transferFrom(_msgSender(), address(this), amount);
         
         emit IncreaseLiquidity(amount, _converterInternalLiquidity);
     }
@@ -239,16 +225,12 @@ contract TokenConversionManagerV3 is Ownable2Step, ReentrancyGuard {
 
         if (_converterInternalLiquidity == 0) revert InsufficientLiquidityBalance();
         if (amount > _converterInternalLiquidity) revert WithdrawExceedsDeposit();
-        if (getConverterBalance() < amount) revert InsufficientConverterBalance();
+        if (amount > getConverterBalance()) revert InsufficientConverterBalance();
 
         _converterInternalLiquidity -= amount;
 
-        // (bool success, ) = TOKEN.call(abi.encodeWithSelector(TRANSFER_SELECTOR, _msgSender(), amount));
-        bool success = IERC20(TOKEN).transfer(_msgSender(), amount);
+        IERC20(TOKEN).transfer(_msgSender(), amount);
 
-        if (!success)
-            revert DecreaseLiquidityFailed();
-        
         emit DecreaseLiquidity(amount, _converterInternalLiquidity);
     }
 
@@ -257,14 +239,23 @@ contract TokenConversionManagerV3 is Ownable2Step, ReentrancyGuard {
         return keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", hash));
     }
 
+    /**
+    * @dev Getter Function return currect converter authorizer
+    */
     function getConversionAuthorizer() external view returns (address) {
         return _conversionAuthorizer;
     }
 
+    /**
+    * @dev Getter Function return currect converter configuration
+    */
     function getConversionConfigurations() external view returns (uint256,uint256,uint256) {
         return(_perTxnMinAmount, _perTxnMaxAmount, _maxSupply);
     }
 
+    /**
+    * @dev Getter Function return currect converter balance of tokens
+    */
     function getConverterBalance() public view returns (uint256) {
         return IERC20(TOKEN).balanceOf(address(this));
     }
