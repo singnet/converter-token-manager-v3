@@ -89,7 +89,7 @@ The `TokenConversionManager` contract manages token conversions between Ethereum
 
 - **conversionIn**
   - **Parameters**: `address to, uint256 amount, bytes32 conversionId, uint8 v, bytes32 r, bytes32 s`
-  - **Description**: Converts tokens in (mints them) after verifying the signature and preventing replay attacks.
+  - **Description**: Converts tokens in (transferring them) after verifying the signature and preventing replay attacks.
 
 - **updateAuthorizer**
   - **Parameters**: `address newAuthorizer`
