@@ -85,7 +85,7 @@ The `TokenConversionManager` contract manages token conversions between Ethereum
 
 - **conversionOut**
   - **Parameters**: `uint256 amount, bytes32 conversionId, uint8 v, bytes32 r, bytes32 s`
-  - **Description**: Converts tokens from Ethereum to non Ethereum network. The tokens which needs to be convereted will be burned on the Ethereum network. The conversion authorizer needs to provide the signature to call this function.
+  - **Description**: Converts tokens from Ethereum to non Ethereum network. The tokens which needs to be convereted will transfer to convtract for lock on the Ethereum network. The conversion authorizer needs to provide the signature to call this function.
 
 - **conversionIn**
   - **Parameters**: `address to, uint256 amount, bytes32 conversionId, uint8 v, bytes32 r, bytes32 s`
