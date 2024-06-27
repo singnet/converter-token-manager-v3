@@ -96,7 +96,7 @@ The `TokenConversionManager` contract manages token conversions between Ethereum
   - **Description**: Updates the conversion authorizer address. Only callable by the contract owner.
 
 - **updateConfigurations**
-  - **Parameters**: `uint256 perTxnMinAmount, uint256 perTxnMaxAmount, uint256 maxSupply`
+  - **Parameters**: `uint256 perTxnMinAmount, uint256 perTxnMaxAmount`
   - **Description**: Updates the conversion configuration limits. Only callable by the contract owner.
 
 - **getconversionAuthorizer**
