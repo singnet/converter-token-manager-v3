@@ -119,8 +119,8 @@ The `TokenConversionManager` contract manages token conversions between Ethereum
   - **Type**: `mapping (bytes32 => bool)`
   - **Description**: Tracks used conversion signatures to prevent replay attacks.
 
-- **_perTxnMinAmount, _perTxnMaxAmount, _maxSupply**
+- **_perTxnMinAmount, _perTxnMaxAmount**
   - **Type**: `uint256`
-  - **Description**: Configurations for minimum and maximum transaction amounts and maximum total supply.
+  - **Description**: Configurations for minimum and maximum transaction amounts.
 
 </br> </br>
