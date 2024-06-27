@@ -69,7 +69,7 @@ As part of the functionality, the contract should be able to transfer and lock o
 
 The converter contract should also be able to issue a validated number of tokens when using a specific role in the token.
 
-The contract validates the minimum and maximum number of tokens within each conversion transaction. And also prevent exceeding the maximum number (max supply) of issued tokens for the token being used.
+The contract validates the minimum and maximum number of tokens within each conversion transaction.
 
 # Technical requirements
 
