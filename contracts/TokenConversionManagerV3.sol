@@ -27,13 +27,12 @@ contract TokenConversionManagerV3 is Ownable2Step, ReentrancyGuard {
     // Conversion Configurations
     uint256 private _perTxnMinAmount;
     uint256 private _perTxnMaxAmount;
-    uint256 private _maxSupply;
 
     uint256 private _converterInternalLiquidity;
 
     // Events
     event NewAuthorizer(address conversionAuthorizer);
-    event UpdateConfiguration(uint256 perTxnMinAmount, uint256 perTxnMaxAmount, uint256 maxSupply);
+    event UpdateConfiguration(uint256 perTxnMinAmount, uint256 perTxnMaxAmount);
 
     event ConversionOut(address indexed tokenHolder, bytes32 conversionId, uint256 amount);
     event ConversionIn(address indexed tokenHolder, bytes32 conversionId, uint256 amount);
@@ -74,26 +73,23 @@ contract TokenConversionManagerV3 is Ownable2Step, ReentrancyGuard {
     * @dev To update the per transaction limits for the conversion and to provide max total supply 
     * @param perTxnMinAmount - min amount for conversion
     * @param perTxnMaxAmount - max amount for conversion
-    * @param maxSupply - value of max supply for bridging token
     */
     function updateConfigurations(
         uint256 perTxnMinAmount, 
-        uint256 perTxnMaxAmount, 
-        uint256 maxSupply
+        uint256 perTxnMaxAmount
     )
         external 
         onlyOwner 
     {
         // Check for the valid inputs
-        if (perTxnMinAmount == 0 || perTxnMaxAmount <= perTxnMinAmount || maxSupply == 0) 
+        if (perTxnMinAmount == 0 || perTxnMaxAmount <= perTxnMinAmount) 
             revert InvalidUpdateConfigurations();
 
         // Update the configurations
         _perTxnMinAmount = perTxnMinAmount;
         _perTxnMaxAmount = perTxnMaxAmount;
-        _maxSupply = maxSupply;
 
-        emit UpdateConfiguration(perTxnMinAmount, perTxnMaxAmount, maxSupply);
+        emit UpdateConfiguration(perTxnMinAmount, perTxnMaxAmount);
     }
 
 
@@ -249,8 +245,8 @@ contract TokenConversionManagerV3 is Ownable2Step, ReentrancyGuard {
     /**
     * @dev Getter Function return currect converter configuration
     */
-    function getConversionConfigurations() external view returns (uint256,uint256,uint256) {
-        return(_perTxnMinAmount, _perTxnMaxAmount, _maxSupply);
+    function getConversionConfigurations() external view returns (uint256, uint256) {
+        return(_perTxnMinAmount, _perTxnMaxAmount);
     }
 
     /**

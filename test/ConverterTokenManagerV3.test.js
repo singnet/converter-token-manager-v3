@@ -28,7 +28,7 @@ describe("TokenConversionManagerV3 - Lock mechanic", function () {
             await token.getAddress(), // address of token to convert
         );
 
-        await converter.updateConfigurations(1000000000, 100000000000, 1000000000000000); //!! min 1 max 1000 maxs 10000
+        await converter.updateConfigurations(1000000000, 100000000000); //!! min 1 max 1000 maxs 10000
         await converter.updateAuthorizer(await authorizer.getAddress());
         await token.grantRole("0x9f2df0fed2c77648de5860a4cc508cd0818c85b8b8a1ab4ceeef8d981c8956a6", converter.getAddress());
         
@@ -154,13 +154,11 @@ describe("TokenConversionManagerV3 - Lock mechanic", function () {
      
         let minimum = 1000000000;
         let maximum = 100000000000;
-        let maxSupply = 1000000000000000;
 
         let currectConverterSettings = await converter.getConversionConfigurations();
 
         expect(currectConverterSettings[0]).to.equal(BigInt(minimum));
         expect(currectConverterSettings[1]).to.equal(BigInt(maximum));
-        expect(currectConverterSettings[2]).to.equal(BigInt(maxSupply));
 
     });
 
@@ -269,7 +267,7 @@ describe("TokenConversionManagerV3 - Lock mechanic", function () {
             await token.getAddress(), // address of token to convert
         );
 
-        await converter.updateConfigurations(1000000000, 100000000000, 1000000000000000); //!! min 1 max 1000 maxs 10000
+        await converter.updateConfigurations(1000000000, 100000000000); //!! min 1 max 1000 maxs 10000
         await converter.updateAuthorizer(await authorizer.getAddress());
     });
 
@@ -323,7 +321,7 @@ describe("TokenConversionManagerV3 - Check unauthorized and invalid operations",
             await token.getAddress(), // address of token to convert
         );
 
-        await converter.updateConfigurations(1000000000, 100000000000, 1000000000000000); //!! min 1 max 1000 maxs 10000
+        await converter.updateConfigurations(1000000000, 100000000000); //!! min 1 max 1000 maxs 10000
         await converter.updateAuthorizer(await authorizer.getAddress());
         
         await token.mint(await converter.getAddress(), 1000000000000000);  // 100k liquid
@@ -517,7 +515,7 @@ describe("TokenConversionManagerV3 - Administrative functionality", function () 
             await token.getAddress(), // address of token to convert
         );
 
-        await converter.updateConfigurations(1000000000, 100000000000, 1000000000000000); //!! min 1 max 1000 maxs 10000
+        await converter.updateConfigurations(1000000000, 100000000000); //!! min 1 max 1000 maxs 10000
         await converter.updateAuthorizer(await authorizer.getAddress());
         
         await token.mint(await converter.getAddress(), 1000000000000000);  // 100k liquid
@@ -554,28 +552,25 @@ describe("TokenConversionManagerV3 - Administrative functionality", function () 
 
         let minimum = 100;
         let maximum = 500;
-        let maxSupply = 1000;
-        await converter.updateConfigurations(minimum, maximum, maxSupply);
+        await converter.updateConfigurations(minimum, maximum);
         let updatedConfigurations = await converter.getConversionConfigurations();
 
         expect(updatedConfigurations[0]).to.equal(BigInt(minimum));
         expect(updatedConfigurations[1]).to.equal(BigInt(maximum));
-        expect(updatedConfigurations[2]).to.equal(BigInt(maxSupply));
 
         await converter.transferOwnership(await newOwnerContract.getAddress());
         await converter.connect(newOwnerContract).acceptOwnership();
 
-        let badMinimum = 500;
+        let badMinimum = 0;
         let badMaximum = 100;
-        let badMaxSupply = 0;
 
         await expect(
-        converter.connect(newOwnerContract).updateConfigurations(badMinimum, badMaximum, badMaxSupply)
+        converter.connect(newOwnerContract).updateConfigurations(badMinimum, badMaximum)
         ).to.be.revertedWithCustomError(converter, "InvalidUpdateConfigurations");
 
         await expect(
         converter.connect(intruder).updateConfigurations(
-            minimum, maximum, maxSupply
+            minimum, maximum
         )
         ).to.be.revertedWith("Ownable: caller is not the owner");
     });
