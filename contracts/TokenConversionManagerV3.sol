@@ -3,7 +3,6 @@ pragma solidity 0.8.26;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/access/Ownable2Step.sol";
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
 // Errors
 error ViolationOfTxAmountLimits();
@@ -15,7 +14,7 @@ error InsufficientLiquidityBalance();
 error WithdrawExceedsDeposit();
 error ZeroAddress();
 
-contract TokenConversionManagerV3 is Ownable2Step, ReentrancyGuard {
+contract TokenConversionManagerV3 is Ownable2Step {
 
     address internal immutable TOKEN;
 
@@ -110,10 +109,8 @@ contract TokenConversionManagerV3 is Ownable2Step, ReentrancyGuard {
         bytes32 r, 
         bytes32 s
     ) 
-        external 
-        payable
+        external
         checkLimits(amount) 
-        nonReentrant 
     {
         // Check for non zero value for the amount is not needed as the Signature will not be generated for zero amount
         // Compose the message which was signed
@@ -163,9 +160,6 @@ contract TokenConversionManagerV3 is Ownable2Step, ReentrancyGuard {
         bytes32 s
     )
         external
-        payable
-        checkLimits(amount) 
-        nonReentrant 
         notZeroAddress(to)
     {
         // Check for non zero value for the amount is not needed as the Signature will not be generated for zero amount
