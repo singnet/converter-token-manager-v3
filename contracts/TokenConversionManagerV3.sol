@@ -208,7 +208,7 @@ contract TokenConversionManagerV3 is Ownable2Step {
     }
 
     /**
-    * @dev Function for adding tokens to the converter manager for its possible use
+    * @dev Function remove tokens from the converter manager
     * @param amount - amount for remove available converter liquidity
     */
     function decreaseConverterLiquidity(uint256 amount) external onlyOwner {
