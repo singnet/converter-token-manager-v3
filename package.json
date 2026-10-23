@@ -1,17 +1,24 @@
 {
-  "devDependencies": {
-    "@nomicfoundation/hardhat-toolbox": "5.0.0",
-    "@nomicfoundation/hardhat-verify": "2.0.7",
-    "hardhat": "2.22.3",
-    "hardhat-contract-sizer": "2.10.0"
-  },
+  "type": "module",
   "dependencies": {
+    "@nomicfoundation/hardhat-ethers": "^4.2.1",
+    "@nomicfoundation/hardhat-verify": "^3.1.4",
     "@openzeppelin/contracts": "4.9.3",
+    "@types/node": "^22.20.5",
     "dotenv": "16.3.1",
+    "ethers": "^6.17.0",
+    "hardhat": "^3.21.0",
+    "typescript": "~6.0.3",
     "web3": "4.8.0"
   },
   "resolutions": {
     "pbkdf2": "^3.1.2",
     "elliptic": "^6.6.0"
+  },
+  "devDependencies": {
+    "@nomicfoundation/hardhat-ethers-chai-matchers": "^3.0.13",
+    "@nomicfoundation/hardhat-mocha": "^4.0.1",
+    "chai": "^6.3.0",
+    "mocha": "^12.0.3"
   }
 }

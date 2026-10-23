@@ -1,31 +1,67 @@
-require("@nomicfoundation/hardhat-toolbox");
-require("hardhat-contract-sizer");
-require("@nomicfoundation/hardhat-verify");
+import { readFileSync } from "node:fs";
+import { configVariable, defineConfig } from "hardhat/config";
+import hardhatEthers from "@nomicfoundation/hardhat-ethers";
+import hardhatVerify from "@nomicfoundation/hardhat-verify";
+import hardhatMocha from "@nomicfoundation/hardhat-mocha";
+import hardhatEthersChaiMatchers from "@nomicfoundation/hardhat-ethers-chai-matchers";
 
-const fs = require('fs');
+process.loadEnvFile(".env");
 
-require('dotenv').config({ path: '.env'});
-const { INFURA, ETHSKAN } = process.env;
+const deployerPrivateKey = readFileSync(".secret", "utf8").trim();
 
-/** @type import('hardhat/config').HardhatUserConfig */
-module.exports = {
-  solidity: "0.8.26", // Recommended use latest solc & solidity version
-  settings: {
-    optimizer: {
-      enabled: true,
-      runs: 200,
-    }
-  }
-  /*
+const development = {
+  version: "0.8.26",
+};
+
+export default defineConfig({
+  solidity: {
+    profiles: {
+      // Hardhat requires a `default` profile; it's used when --build-profile is omitted
+      default: development,
+      development: {
+        version: "0.8.26",
+        settings: {
+          optimizer: {
+            enabled: true,
+            runs: 200,
+          },
+        },
+      },
+      production: {
+        version: "0.8.26",
+        settings: {
+          optimizer: {
+            enabled: true,
+            runs: 200,
+          },
+        },
+      },
+    },
+  },
   networks: {
     sepolia: {
-      url: `https://sepolia.infura.io/v3/${INFURA}`,
-      accounts: ["0x..."],
-      chainId: 11155111
-    }
-  }, 
-  etherscan: {
-    apiKey: ETHSKAN,
+      type: "http",
+      chainType: "l1",
+      url: configVariable("INFURA", {
+        format: "https://sepolia.infura.io/v3/{variable}",
+      }),
+      accounts: [deployerPrivateKey],
+      chainId: 11155111,
+    },
+    mainnet: {
+      type: "http",
+      chainType: "l1",
+      url: configVariable("INFURA", {
+        format: "https://mainnet.infura.io/v3/{variable}",
+      }),
+      accounts: [deployerPrivateKey],
+      chainId: 1,
+    },
   },
-  */
-};
+  plugins: [hardhatEthers, hardhatVerify, hardhatMocha, hardhatEthersChaiMatchers],
+  verify: {
+    etherscan: {
+      apiKey: configVariable("ETHERSCAN_API_KEY"),
+    },
+  },
+});

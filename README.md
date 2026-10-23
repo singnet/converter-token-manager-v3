@@ -5,30 +5,35 @@ Recommended using WSLv2/Linux/MacOS with LTS Node >= 18 & NPM >= 10 version
 
 **Table of Contents**
 
-- [Installation](#installation)
-- [Commands to launch tests](#commands-to-launch-tests)
-- [Use Case](#use-case)
+- [converter-token-manager-v3](#converter-token-manager-v3)
+  - [Installation](#installation)
+  - [Compilation](#compilation)
+  - [Commands to launch tests](#commands-to-launch-tests)
+  - [Test coverage](#test-coverage)
+  - [Deploy](#deploy)
+  - [Verify](#verify)
+- [Use case](#use-case)
 - [Roles](#roles)
 - [Functionality](#functionality)
   - [Converter Contract functionality requirements](#converter-contract-functionality-requirements)
 - [Technical requirements](#technical-requirements)
   - [Project components](#project-components)
-  - [`Token Conversion Manager` Contract](#token-conversion-manager-contract)
-    - [Key-functions](#token-conversion-manager-key-functions)
-    - [State variables](#token-conversion-manager-state-variables)
+    - [`Token Conversion Manager` Contract](#token-conversion-manager-contract)
+      - [`Token Conversion Manager` Key-functions](#token-conversion-manager-key-functions)
+      - [`Token Conversion Manager` State variables](#token-conversion-manager-state-variables)
 
 ## Installation
 
 1. Install dependencies
 ```bash
-    npm install
+npm install
 ```
 
 ## Compilation
 
-1. Install dependencies
+2. Compile contracts
 ```bash
-    npx hardhat compile
+npx hardhat compile
 ```
 
 ## Commands to launch tests
@@ -36,7 +41,7 @@ The `Token.sol` file with a sample token contract is only needed to run the test
 
 3. Run Tests
 ```bash
-    npx hardhat test
+npx hardhat test test/ConverterTokenManagerV3.test.js
 ```
 
 ## Test coverage
@@ -44,7 +49,19 @@ The `Token.sol` file with a sample token contract is only needed to run the test
 
 4. Run Tests
 ```bash
-    npx hardhat coverage
+npx hardhat coverage
+```
+
+## Deploy
+
+```bash
+npx hardhat run scripts/deploy.js --build-profile production --network sepolia
+```
+
+## Verify
+
+```bash
+npx hardhat verify --build-profile production --network sepolia <address> <token>
 ```
 
 # Use case

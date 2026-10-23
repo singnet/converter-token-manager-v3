@@ -1,9 +1,7 @@
-const { expect } = require("chai");
-const { ethers } = require("hardhat");
-const { formatBytes32String } = require("@ethersproject/strings");
-const { arrayify, splitSignature } = require("@ethersproject/bytes");
-var ethereumjsabi = require('ethereumjs-abi')
-const Buffer = require('buffer').Buffer;
+import { expect } from "chai";
+import { network } from "hardhat";
+
+const { ethers } = await network.getOrCreate();
 
 
 describe("TokenConversionManagerV3 - Lock mechanic", function () {
@@ -43,21 +41,21 @@ describe("TokenConversionManagerV3 - Lock mechanic", function () {
         await token.connect(tokenHolder).approve(await converter.getAddress(), amount);
         await converter.updateAuthorizer(await authorizer.getAddress());
 
-        const messageHash = ethereumjsabi.soliditySHA3(
+        const messageHash = ethers.solidityPackedKeccak256(
             ["string", "uint256", "address", "bytes32", "address"],
             ["__conversionOut", amount, await tokenHolder.getAddress(),
-            "0x" + Buffer.from("conversionId").toString('hex'),
+            ethers.encodeBytes32String("conversionId"),
             await converter.getAddress()]
         );
     
-        const msg = arrayify(messageHash);
+        const msg = ethers.getBytes(messageHash);
         const signature = await authorizer.signMessage(msg);
 
-        const { v, r, s } = splitSignature(signature);
+        const { v, r, s } = ethers.Signature.from(signature);
         
         await converter.connect(tokenHolder).conversionOut(
             amount,
-            formatBytes32String("conversionId"),
+            ethers.encodeBytes32String("conversionId"),
             v, r, s
         );
         
@@ -72,22 +70,22 @@ describe("TokenConversionManagerV3 - Lock mechanic", function () {
         await token.connect(tokenHolder).approve(await converter.getAddress(), amount);
         await converter.updateAuthorizer(await authorizer.getAddress())
 
-        const messageHash = ethereumjsabi.soliditySHA3(
+        const messageHash = ethers.solidityPackedKeccak256(
             ["string", "uint256", "address", "bytes32", "address"],
             ["__conversionIn", amount, await tokenHolder.getAddress(),
-            "0x" + Buffer.from("conversionId").toString('hex'),
+            ethers.encodeBytes32String("conversionId"),
             await converter.getAddress()]
         );
     
-        const msg = arrayify(messageHash);
+        const msg = ethers.getBytes(messageHash);
         const signature = await authorizer.signMessage(msg);
 
-        const { v, r, s } = splitSignature(signature);
+        const { v, r, s } = ethers.Signature.from(signature);
 
         await converter.connect(tokenHolder).conversionIn(
             tokenHolder.getAddress(),
             amount,
-            formatBytes32String("conversionId"),
+            ethers.encodeBytes32String("conversionId"),
             v, r, s
         )
         expect(BigInt(initBalanceBeforeConversionIn)-BigInt(amount)).to.equal(BigInt(await token.balanceOf(await converter.getAddress())));
@@ -102,21 +100,21 @@ describe("TokenConversionManagerV3 - Lock mechanic", function () {
 
         await token.pause();
 
-        const messageHash = ethereumjsabi.soliditySHA3(
+        const messageHash = ethers.solidityPackedKeccak256(
             ["string", "uint256", "address", "bytes32", "address"],
             ["__conversionOut", amount, await tokenHolder.getAddress(),
-            "0x" + Buffer.from("conversionId").toString('hex'),
+            ethers.encodeBytes32String("conversionId"),
             await converter.getAddress()]
         );
     
-        const msg = arrayify(messageHash);
+        const msg = ethers.getBytes(messageHash);
         const signature = await authorizer.signMessage(msg);
 
-        const { v, r, s } = splitSignature(signature);
+        const { v, r, s } = ethers.Signature.from(signature);
         
         await expect(converter.connect(tokenHolder).conversionOut(
             amount,
-            formatBytes32String("conversionId"),
+            ethers.encodeBytes32String("conversionId"),
             v, r, s
         )).to.be.revertedWith("Pausable: paused");
     });
@@ -130,22 +128,22 @@ describe("TokenConversionManagerV3 - Lock mechanic", function () {
 
         await token.pause();
 
-        const messageHash = ethereumjsabi.soliditySHA3(
+        const messageHash = ethers.solidityPackedKeccak256(
             ["string", "uint256", "address", "bytes32", "address"],
             ["__conversionIn", amount, await tokenHolder.getAddress(),
-            "0x" + Buffer.from("conversionId").toString('hex'),
+            ethers.encodeBytes32String("conversionId"),
             await converter.getAddress()]
         );
     
-        const msg = arrayify(messageHash);
+        const msg = ethers.getBytes(messageHash);
         const signature = await authorizer.signMessage(msg);
 
-        const { v, r, s } = splitSignature(signature);
+        const { v, r, s } = ethers.Signature.from(signature);
 
         await expect(converter.connect(tokenHolder).conversionIn(
             tokenHolder.getAddress(),
             amount,
-            formatBytes32String("conversionId"),
+            ethers.encodeBytes32String("conversionId"),
             v, r, s
         )).to.be.revertedWith("Pausable: paused")
     });
@@ -278,22 +276,22 @@ describe("TokenConversionManagerV3 - Lock mechanic", function () {
         await token.connect(tokenHolder).approve(await converter.getAddress(), amount);
         await converter.updateAuthorizer(await authorizer.getAddress());
 
-        const messageHash = ethereumjsabi.soliditySHA3(
+        const messageHash = ethers.solidityPackedKeccak256(
             ["string", "uint256", "address", "bytes32", "address"],
             ["__conversionIn", amount, await tokenHolder.getAddress(),
-            "0x" + Buffer.from("conversionId").toString('hex'),
+            ethers.encodeBytes32String("conversionId"),
             await converter.getAddress()]
         );
     
-        const msg = arrayify(messageHash);
+        const msg = ethers.getBytes(messageHash);
         const signature = await authorizer.signMessage(msg);
 
-        const { v, r, s } = splitSignature(signature);
+        const { v, r, s } = ethers.Signature.from(signature);
 
         await expect(converter.connect(tokenHolder).conversionIn(
             tokenHolder.getAddress(),
             amount,
-            formatBytes32String("conversionId"),
+            ethers.encodeBytes32String("conversionId"),
             v, r, s
         )).to.be.revertedWithCustomError(converter, "InsufficientConverterBalance")
     });
@@ -337,22 +335,22 @@ describe("TokenConversionManagerV3 - Check unauthorized and invalid operations",
         await converter.updateAuthorizer(await authorizer.getAddress())
         
         let fakeAmount = 10000000000;
-        const messageHash = ethereumjsabi.soliditySHA3(
+        const messageHash = ethers.solidityPackedKeccak256(
             ["string", "uint256", "address", "bytes32", "address"],
             ["__conversionOut", fakeAmount, await intruder.getAddress(),
-            "0x" + Buffer.from("Attack").toString('hex'),
+            ethers.encodeBytes32String("Attack"),
             await converter.getAddress()]
         );
     
-        const msg = arrayify(messageHash);
+        const msg = ethers.getBytes(messageHash);
         const signature = await intruder.signMessage(msg);
 
-        const { v, r, s } = splitSignature(signature);
+        const { v, r, s } = ethers.Signature.from(signature);
 
         await expect(
         converter.connect(intruder).conversionOut(
             fakeAmount,
-            formatBytes32String("Attack"),
+            ethers.encodeBytes32String("Attack"),
             v, r, s
         )
         ).to.be.revertedWithCustomError(converter, "InvalidRequestOrSignature");
@@ -366,22 +364,22 @@ describe("TokenConversionManagerV3 - Check unauthorized and invalid operations",
 
         let fakeAmount = 10000000000;
 
-        const messageHash = ethereumjsabi.soliditySHA3(
+        const messageHash = ethers.solidityPackedKeccak256(
             ["string", "uint256", "address", "bytes32", "address"],
             ["__conversionIn", fakeAmount, await intruder.getAddress(),
-            "0x" + Buffer.from("Attack").toString('hex'),
+            ethers.encodeBytes32String("Attack"),
             await converter.getAddress()]
         );
     
-        const msg = arrayify(messageHash);
+        const msg = ethers.getBytes(messageHash);
         const signature = await intruder.signMessage(msg);
 
-        const { v, r, s } = splitSignature(signature);
+        const { v, r, s } = ethers.Signature.from(signature);
 
         await expect(converter.connect(intruder).conversionIn(
             tokenHolder.getAddress(),
             fakeAmount,
-            formatBytes32String("Attack"),
+            ethers.encodeBytes32String("Attack"),
             v, r, s
         )).to.be.revertedWithCustomError(converter, "InvalidRequestOrSignature");
     });
@@ -396,22 +394,22 @@ describe("TokenConversionManagerV3 - Check unauthorized and invalid operations",
         await converter.updateAuthorizer(await authorizer.getAddress())
         
         let amount = 100000000;
-        const messageHash = ethereumjsabi.soliditySHA3(
+        const messageHash = ethers.solidityPackedKeccak256(
             ["string", "uint256", "address", "bytes32", "address"],
             ["__conversionOut", amount, await user.getAddress(),
-            "0x" + Buffer.from("ConversioId").toString('hex'),
+            ethers.encodeBytes32String("ConversioId"),
             await converter.getAddress()]
         );
     
-        const msg = arrayify(messageHash);
+        const msg = ethers.getBytes(messageHash);
         const signature = await authorizer.signMessage(msg);
 
-        const { v, r, s } = splitSignature(signature);
+        const { v, r, s } = ethers.Signature.from(signature);
 
         await expect(
             converter.connect(user).conversionOut(
                 amount,
-                formatBytes32String("ConversioId"),
+                ethers.encodeBytes32String("ConversioId"),
                 v, r, s
             )
         ).to.be.revertedWithCustomError(converter, "ViolationOfTxAmountLimits");
@@ -427,27 +425,27 @@ describe("TokenConversionManagerV3 - Check unauthorized and invalid operations",
         await converter.updateAuthorizer(await authorizer.getAddress())
 
 
-        const messageHash = ethereumjsabi.soliditySHA3(
+        const messageHash = ethers.solidityPackedKeccak256(
             ["string", "uint256", "address", "bytes32", "address"],
             ["__conversionOut", amount, await user.getAddress(),
-            "0x" + Buffer.from("conversionId").toString('hex'),
+            ethers.encodeBytes32String("conversionId"),
             await converter.getAddress()]
         );
     
-        const msg = arrayify(messageHash);
+        const msg = ethers.getBytes(messageHash);
         const signature = await authorizer.signMessage(msg);
 
-        const { v, r, s } = splitSignature(signature);
+        const { v, r, s } = ethers.Signature.from(signature);
         
         await converter.connect(user).conversionOut(
             amount,
-            formatBytes32String("conversionId"),
+            ethers.encodeBytes32String("conversionId"),
             v, r, s
         )
 
         await expect(converter.connect(user).conversionOut(
             amount,
-            formatBytes32String("conversionId"),
+            ethers.encodeBytes32String("conversionId"),
             v, r, s
         )).to.be.revertedWithCustomError(converter, "UsedSignature");
 
@@ -465,36 +463,36 @@ describe("TokenConversionManagerV3 - Check unauthorized and invalid operations",
         await token.connect(user).approve(await converter.getAddress(), amount);
         await converter.updateAuthorizer(await authorizer.getAddress())
 
-        const messageHash = ethereumjsabi.soliditySHA3(
+        const messageHash = ethers.solidityPackedKeccak256(
             ["string", "uint256", "address", "bytes32", "address"],
             ["__conversionIn", amount, await tokenHolder.getAddress(),
-            "0x" + Buffer.from("conversionId").toString('hex'),
+            ethers.encodeBytes32String("conversionId"),
             await converter.getAddress()]
         );
     
-        const msg = arrayify(messageHash);
+        const msg = ethers.getBytes(messageHash);
         const signature = await authorizer.signMessage(msg);
 
-        const { v, r, s } = splitSignature(signature);
+        const { v, r, s } = ethers.Signature.from(signature);
 
         await converter.connect(tokenHolder).conversionIn(
             user.getAddress(),
             amount,
-            formatBytes32String("conversionId"),
+            ethers.encodeBytes32String("conversionId"),
             v, r, s
         );
 
         await expect(converter.connect(user).conversionIn(
             user.getAddress(),
             amount,
-            formatBytes32String("conversionId"),
+            ethers.encodeBytes32String("conversionId"),
             v, r, s
         )).to.be.revertedWithCustomError(converter, "UsedSignature");
     }); 
 });
 
 describe("TokenConversionManagerV3 - Administrative functionality", function () {
-    let authorizer, tokenHolder, newAuthorizer
+    let authorizer, tokenHolder, newAuthorizer, intruder, admin
     let token, converter;
 
     beforeEach(async () => {
